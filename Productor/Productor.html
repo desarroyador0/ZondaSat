@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TerraShift · Tu Finca en Simple</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="productor.css" />
+</head>
+<body>
+  <!-- ENCABEZADO SIMPLE -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-icon">🌱</span>
+      <div>
+        <h1>TerraShift · Tu Finca en Simple</h1>
+        <p>Entendé cómo está tu tierra hoy y qué sembrar mañana, explicado sin vueltas.</p>
+      </div>
+    </div>
+    <a href="index.html" class="tech-link" title="Ir a la vista técnica completa">Vista Técnica ⚙️</a>
+  </header>
+
+  <main class="story-container">
+    <!-- PASO 1: UBICAR LA FINCA -->
+    <section class="step-card" id="step-1">
+      <div class="step-badge">PASO 1 · TU LOTE</div>
+      <h2>Marcá los bordes de tu finca en el mapa</h2>
+      <p class="step-lead">Tocá las esquinas de tu terreno con el dedo (mínimo 3 puntos) y elegí cada cuánto recibís agua.</p>
+
+      <div class="setup-grid">
+        <div class="map-wrapper">
+          <div id="map"></div>
+          <div class="map-floating-bar">
+            <span id="lbl-parcel-status">Tocá el mapa para empezar</span>
+            <div class="map-mini-btns">
+              <button id="btn-undo" disabled>↩️ Borrar último</button>
+              <button id="btn-reset">🗑️ Limpiar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-form">
+          <div class="farm-summary-pill">
+            <div>
+              <span>Superficie marcada</span>
+              <strong id="lbl-area">0.00 ha</strong>
+            </div>
+            <div>
+              <span>Puntos marcados</span>
+              <strong id="lbl-points">0</strong>
+            </div>
+          </div>
+
+          <label class="big-input">
+            <span>💧 ¿Cada cuánto tenés turno de agua?</span>
+            <select id="sel-turn">
+              <option value="secano">No tengo riego (solo lluvia)</option>
+              <option value="canal_21">Cada 21 días (agua muy espaciada)</option>
+              <option value="canal_15" selected>Cada 15 días (turno quincenal)</option>
+              <option value="canal_8">Cada 7 a 10 días (turno seguido)</option>
+              <option value="goteo">Tengo goteo o agua cuando necesito</option>
+            </select>
+          </label>
+
+          <label class="big-input">
+            <span>🎯 ¿Qué buscás lograr en este lote?</span>
+            <select id="sel-goal">
+              <option value="eficiencia" selected>Ahorrar agua y no perder cosecha</option>
+              <option value="regeneracion">Curar la tierra, bajar sal y mejorar el suelo</option>
+              <option value="renta">Sacar la mejor ganancia posible</option>
+            </select>
+          </label>
+
+          <button id="btn-analyze" class="cta-button" disabled>
+            🔍 Ver cómo está mi tierra
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENIDO DINÁMICO (APARECE AL ANALIZAR) -->
+    <div id="story-results" class="story-results hidden">
+      
+      <!-- PASO 2: EL SEMÁFORO GENERAL DE LA FINCA -->
+      <section class="step-card" id="step-2">
+        <div class="step-badge">PASO 2 · RADIOGRAFÍA HOY</div>
+        <h2 id="headline-verdict">Así está tu finca hoy</h2>
+        <p class="step-lead" id="subheadline-verdict">Resumen claro basado en los últimos 5 años de satélites sobre tu parcela.</p>
+
+        <div class="traffic-grid" id="traffic-cards"></div>
+      </section>
+
+      <!-- PASO 3: GRÁFICOS VISUALES E ILUSTRACIÓN DEL SUELO -->
+      <section class="step-card" id="step-3">
+        <div class="step-badge">PASO 3 · LO QUE PASA BAJO TUS PIES</div>
+        <h2>Agua, Sol y Temperatura mes a mes</h2>
+        <p class="step-lead">Mirá de un vistazo cuándo le falta agua al suelo y en qué meses la tierra sufre más calor o heladas.</p>
+
+        <div class="visuals-grid">
+          <!-- Ilustración SVG Perfil del Suelo -->
+          <div class="visual-box">
+            <h3>🌱 Perfil de Humedad en tu Suelo</h3>
+            <div id="soil-illustration"></div>
+            <p class="visual-caption" id="soil-caption"></p>
+          </div>
+
+          <!-- Gráfico de Barras Mes a Mes (Lluvia vs Evaporación) -->
+          <div class="visual-box">
+            <h3>📊 Lluvia que cae vs. Agua que se evapora (12 meses)</h3>
+            <div class="chart-legend">
+              <span><i class="dot water"></i> Lluvia natural</span>
+              <span><i class="dot sun"></i> Agua que se evapora por calor</span>
+            </div>
+            <div id="monthly-bars-chart" class="bars-chart"></div>
+            <p class="visual-caption" id="water-caption"></p>
+          </div>
+
+          <!-- Historial 5 años: Suelo Desnudo -->
+          <div class="visual-box full-width">
+            <h3>🛰️ Memoria de los últimos 5 años: ¿Cuánto tiempo estuvo tu tierra desnuda?</h3>
+            <div id="five-years-visual" class="years-visual-grid"></div>
+            <p class="visual-caption" id="history-caption"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PASO 4: QUÉ SEMBRAR Y QUÉ EVITAR -->
+      <section class="step-card" id="step-4">
+        <div class="step-badge">PASO 4 · DECISIONES INTELIGENTES</div>
+        <h2>¿Qué conviene sembrar con tu turno de agua?</h2>
+        <p class="step-lead">Filtramos automáticamente lo que se te va a secar o sufrir entre turnos de riego.</p>
+
+        <div class="crops-split">
+          <div class="crop-list-box good">
+            <h3>✅ Cultivos que SÍ aguantan tu ritmo de agua</h3>
+            <ul id="list-good-crops"></ul>
+          </div>
+          <div class="crop-list-box bad">
+            <h3>⛔ Cultivos riesgosos para tu turno actual</h3>
+            <ul id="list-bad-crops"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- PASO 5: PLAN DE ACCIÓN PASO A PASO A FUTURO -->
+      <section class="step-card action-step" id="step-5">
+        <div class="step-badge">PASO 5 · TU HOJA DE RUTA</div>
+        <h2>Plan de acción en 3 pasos para mejorar tu lote</h2>
+        <p class="step-lead">Cada cultivo prepara la cama, la humedad y los nutrientes para el que viene después.</p>
+
+        <div id="action-roadmap" class="roadmap-grid"></div>
+
+        <!-- Comparativa Simple: Seguir igual vs. Hacer el cambio -->
+        <div class="before-after-box">
+          <h3>⚖️ ¿Qué cambia si aplicás este plan?</h3>
+          <div class="ba-grid" id="before-after-grid"></div>
+        </div>
+
+        <div class="honest-note">
+          <strong>🤝 Nota honesta para el productor:</strong> Este mapa usa información satelital regional de la NASA. Te da una guía muy precisa del clima y el relieve de tu zona, pero <strong>no reemplaza mirar la tierra en persona</strong>. Antes de comprar semilla o aplicar enmiendas, revisá la salinidad y humedad real con un <strong>ingeniero agrónomo de tu zona</strong>.
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="productor.js"></script>
+</body>
+</html>

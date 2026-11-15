@@ -1,0 +1,10 @@
+{
+  "name": "TerraShift — NASA Space Apps 2026",
+  "short_name": "TerraShift",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "description": "Copiloto agro-satelital de rotación de cultivos con datos de la NASA.",
+  "icons": []
+}
