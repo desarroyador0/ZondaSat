@@ -3,6 +3,8 @@
 // Usa Leaflet (cargado desde index.html) y, si está disponible, logica.js.
 // =====================================================================
 
+import { iniciarI18n, alCambiarIdioma, t, esIngles } from './i18n/i18n.js';
+
 // logica.js es opcional en esta pantalla: si no carga, el mapa funciona igual
 // y solo se omite la zona con datos de clima.
 let logica = null;
@@ -50,7 +52,7 @@ function mostrarVista() {
     document.body.dataset.vista = enMapa ? 'mapa' : 'bienvenida';
     if (enMapa) {
         iniciarMapa();
-        requestAnimationFrame(() => mapa.invalidateSize());
+        requestAnimationFrame(() => mapa && mapa.invalidateSize());
     }
     window.scrollTo(0, 0);
 }
@@ -63,15 +65,18 @@ window.addEventListener('hashchange', mostrarVista);
 // Mapa
 // ---------------------------------------------------------------------
 let mapa = null;
+let controlZoom = null;
 let capas = {};
 let trazo = null;          // polígono (o línea mientras hay menos de 3 puntos)
 const vertices = [];       // marcadores de Leaflet, en orden
 let pistaTemporal = null;
+let claveAvisoActual = null;
+let paramsAvisoActual = {};
 
 function iniciarMapa() {
     if (mapa) return;
     if (!window.L) {
-        fijarPista('No se pudo cargar el mapa. Revisá tu conexión a internet.', true);
+        fijarPista(t('map.errorLoadMap'), true);
         return;
     }
 
@@ -82,14 +87,18 @@ function iniciarMapa() {
         minZoom: 6,
         maxZoom: 18
     });
-    L.control.zoom({ position: 'topright', zoomInTitle: 'Acercar', zoomOutTitle: 'Alejar' }).addTo(mapa);
+    controlZoom = L.control.zoom({
+        position: 'topright',
+        zoomInTitle: t('map.zoomInTitle'),
+        zoomOutTitle: t('map.zoomOutTitle')
+    }).addTo(mapa);
 
     capas = {
         satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 18, attribution: 'Imágenes &copy; Esri y proveedores'
+            maxZoom: 18, attribution: t('map.attrEsri')
         }),
         calles: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18, attribution: '&copy; colaboradores de OpenStreetMap'
+            maxZoom: 18, attribution: t('map.attrOsm')
         })
     };
     capas.satelite.addTo(mapa);
@@ -111,6 +120,25 @@ function iniciarMapa() {
     actualizar();
 }
 
+function actualizarTextosMapa() {
+    if (!mapa) return;
+    const zoomInBtn = document.querySelector('.leaflet-control-zoom-in');
+    const zoomOutBtn = document.querySelector('.leaflet-control-zoom-out');
+    if (zoomInBtn) {
+        zoomInBtn.title = t('map.zoomInTitle');
+        zoomInBtn.setAttribute('aria-label', t('map.zoomInTitle'));
+    }
+    if (zoomOutBtn) {
+        zoomOutBtn.title = t('map.zoomOutTitle');
+        zoomOutBtn.setAttribute('aria-label', t('map.zoomOutTitle'));
+    }
+    if (capas.satelite) capas.satelite.options.attribution = t('map.attrEsri');
+    if (capas.calles) capas.calles.options.attribution = t('map.attrOsm');
+    if (mapa.attributionControl) {
+        mapa.attributionControl._update();
+    }
+}
+
 function alTocarMapa(evento) {
     if (!el.panelLista.hidden) return;                       // parcela ya registrada
     if (mapa.getZoom() < SAN_JUAN.zoomParaMarcar) {          // todavía muy lejos: primero acercar
@@ -118,7 +146,7 @@ function alTocarMapa(evento) {
         return;
     }
     if (vertices.length >= MAX_PUNTOS) {
-        avisar(`Podés marcar hasta ${MAX_PUNTOS} esquinas`);
+        avisar('map.maxPointsAlert', { max: MAX_PUNTOS });
         return;
     }
     agregarVertice(evento.latlng);
@@ -188,7 +216,10 @@ function centroDe(puntos) {
     };
 }
 
-const formatoHa = ha => (ha >= 100 ? Math.round(ha) : ha.toFixed(ha >= 10 ? 1 : 2)).toString().replace('.', ',') + ' ha';
+const formatoHa = ha => {
+    const txt = (ha >= 100 ? Math.round(ha) : ha.toFixed(ha >= 10 ? 1 : 2)).toString();
+    return (esIngles() ? txt : txt.replace('.', ',')) + ' ha';
+};
 const formatoCoord = c => `${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`.replaceAll('-', '−');
 
 function describirParcela() {
@@ -217,16 +248,17 @@ function actualizar() {
     const parcela = describirParcela();
 
     el.puntos.textContent = n;
-    el.superficie.textContent = parcela ? formatoHa(parcela.superficieHa) : 'Sin marcar';
+    el.superficie.textContent = parcela ? formatoHa(parcela.superficieHa) : t('map.unmarked');
     el.filaCentro.hidden = !parcela;
     if (parcela) el.centro.textContent = formatoCoord(parcela.centroide);
 
     el.filaZona.hidden = !(parcela && parcela.zona);
     el.avisoLejos.hidden = !(parcela && parcela.fueraDeRango);
     if (parcela && parcela.zona) {
-        el.zona.textContent = `${parcela.zona.nombre} (a ${Math.round(parcela.distanciaKm)} km)`;
+        const km = Math.round(parcela.distanciaKm);
+        el.zona.textContent = t('map.zoneDistance', { zona: parcela.zona.nombre, km });
         if (parcela.fueraDeRango) {
-            el.avisoLejos.textContent = `Tu parcela está a ${Math.round(parcela.distanciaKm)} km de la zona con datos más cercana. El análisis puede no representar bien tu campo.`;
+            el.avisoLejos.textContent = t('map.farWarning', { km });
         }
     }
 
@@ -237,13 +269,13 @@ function actualizar() {
 }
 
 function textoDePista() {
-    if (!mapa) return '';
+    if (!mapa) return t('map.hintZoom');
     const n = vertices.length;
-    if (!el.panelLista.hidden) return 'Parcela registrada';
-    if (n === 0 && mapa.getZoom() < SAN_JUAN.zoomParaMarcar) return 'Tocá el mapa para acercarte a tu campo';
-    if (n === 0) return 'Tocá la primera esquina de tu parcela';
-    if (n < 3) return n === 1 ? 'Bien. Faltan 2 esquinas' : 'Falta 1 esquina';
-    return 'Listo. Podés sumar esquinas o comenzar el análisis';
+    if (!el.panelLista.hidden) return t('map.hintRegistered');
+    if (n === 0 && mapa.getZoom() < SAN_JUAN.zoomParaMarcar) return t('map.hintZoom');
+    if (n === 0) return t('map.hintFirstCorner');
+    if (n < 3) return n === 1 ? t('map.hintNeed2') : t('map.hintNeed1');
+    return t('map.hintReady');
 }
 
 function fijarPista(texto, esAviso = false) {
@@ -252,15 +284,26 @@ function fijarPista(texto, esAviso = false) {
 }
 
 function actualizarPista() {
-    if (pistaTemporal) return;
+    if (pistaTemporal) {
+        if (claveAvisoActual) {
+            fijarPista(t(claveAvisoActual, paramsAvisoActual), true);
+        }
+        return;
+    }
     fijarPista(textoDePista());
 }
 
 // Mensaje breve que reemplaza la pista durante unos segundos
-function avisar(texto) {
+function avisar(clave, params = {}) {
     clearTimeout(pistaTemporal);
-    fijarPista(texto, true);
-    pistaTemporal = setTimeout(() => { pistaTemporal = null; actualizarPista(); }, 3500);
+    claveAvisoActual = clave;
+    paramsAvisoActual = params;
+    fijarPista(t(clave, params), true);
+    pistaTemporal = setTimeout(() => {
+        pistaTemporal = null;
+        claveAvisoActual = null;
+        actualizarPista();
+    }, 3500);
 }
 
 // ---------------------------------------------------------------------
@@ -282,18 +325,18 @@ document.querySelectorAll('.conmutador__opcion').forEach(boton => {
 
 el.ubicacion.addEventListener('click', () => {
     if (!mapa) return;
-    if (!navigator.geolocation) { avisar('Este dispositivo no permite obtener tu ubicación'); return; }
+    if (!navigator.geolocation) { avisar('map.noGeolocation'); return; }
     el.ubicacion.classList.add('buscando');
     navigator.geolocation.getCurrentPosition(
         posicion => {
             el.ubicacion.classList.remove('buscando');
             const aqui = L.latLng(posicion.coords.latitude, posicion.coords.longitude);
-            if (!L.latLngBounds(SAN_JUAN.encuadre).contains(aqui)) { avisar('Tu ubicación está fuera de San Juan'); return; }
+            if (!L.latLngBounds(SAN_JUAN.encuadre).contains(aqui)) { avisar('map.outsideSanJuan'); return; }
             mapa.flyTo(aqui, 16, { duration: 0.8 });
         },
         () => {
             el.ubicacion.classList.remove('buscando');
-            avisar('No pudimos obtener tu ubicación. Buscá tu campo en el mapa');
+            avisar('map.geolocationError');
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -325,6 +368,12 @@ el.otra.addEventListener('click', () => {
     el.panelLista.hidden = true;
     el.panelMarcando.hidden = false;
     borrarTodo();
+});
+
+iniciarI18n();
+alCambiarIdioma(() => {
+    actualizarTextosMapa();
+    actualizar();
 });
 
 mostrarVista();

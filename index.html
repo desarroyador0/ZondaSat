@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#F9F8F6">
-    <meta name="description" content="ZondaSat arma un plan de rotación de cultivos para tu parcela de San Juan con datos de clima de la NASA.">
-    <title>ZondaSat</title>
+    <meta name="description" data-i18n-meta="meta.homeDescription" content="ZondaSat arma un plan de rotación de cultivos para tu parcela de San Juan con datos de clima de la NASA.">
+    <title data-i18n-doc-title="meta.homeTitle">ZondaSat</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +21,7 @@
          ============================================================ -->
     <main class="bienvenida" id="vista-bienvenida">
         <header class="bienvenida__barra">
-            <a class="marca" href="#" aria-label="ZondaSat, inicio">
+            <a class="marca" href="#" data-i18n-aria="header.brandAria" aria-label="ZondaSat, inicio">
                 <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true">
                     <rect x="1" y="1" width="30" height="30" rx="9" fill="#2D4A3E"/>
                     <path d="M9 21c7 0 12-4 14-11-7 0-12 4-14 11Z" fill="#F9F8F6"/>
@@ -29,13 +29,22 @@
                 </svg>
                 <span class="marca__nombre">ZondaSat</span>
             </a>
+
+            <div class="selector-idioma" role="group" aria-label="Seleccionar idioma">
+                <svg class="selector-idioma__icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 0 0 0 18M12 3a14.5 14.5 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+                <button class="selector-idioma__btn selector-idioma__btn--activo" type="button" data-lang="es" aria-pressed="true">ES</button>
+                <button class="selector-idioma__btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+            </div>
         </header>
 
         <div class="bienvenida__contenido">
             <section class="bienvenida__texto">
-                <p class="saludo">Hola, productor.</p>
-                <h1 class="titulo">Planificá qué sembrar en tu campo los próximos tres años</h1>
-                <p class="bajada">
+                <p class="saludo" data-i18n="welcome.greeting">Hola, productor.</p>
+                <h1 class="titulo" data-i18n="welcome.title">Planificá qué sembrar en tu campo los próximos tres años</h1>
+                <p class="bajada" data-i18n="welcome.subtitle">
                     Marcá tu parcela en el mapa y armamos un plan de rotación de cultivos
                     con datos de clima de la NASA para tu zona de San Juan.
                 </p>
@@ -43,22 +52,22 @@
                 <ol class="pasos">
                     <li class="pasos__item">
                         <span class="pasos__numero">1</span>
-                        <span>Marcá las esquinas de tu parcela</span>
+                        <span data-i18n="welcome.step1">Marcá las esquinas de tu parcela</span>
                     </li>
                     <li class="pasos__item">
                         <span class="pasos__numero">2</span>
-                        <span>Analizamos el clima de tu zona</span>
+                        <span data-i18n="welcome.step2">Analizamos el clima de tu zona</span>
                     </li>
                     <li class="pasos__item">
                         <span class="pasos__numero">3</span>
-                        <span>Recibís tu plan, temporada por temporada</span>
+                        <span data-i18n="welcome.step3">Recibís tu plan, temporada por temporada</span>
                     </li>
                 </ol>
 
-                <p class="nota">Lleva menos de un minuto. No hace falta crear una cuenta.</p>
+                <p class="nota" data-i18n="welcome.note">Lleva menos de un minuto. No hace falta crear una cuenta.</p>
 
                 <div class="bienvenida__accion">
-                    <button class="boton boton--primario boton--grande" id="btn-comenzar" type="button">
+                    <button class="boton boton--primario boton--grande" id="btn-comenzar" type="button" data-i18n="welcome.startBtn">
                         Comenzar
                     </button>
                 </div>
@@ -127,13 +136,13 @@
                 </svg>
 
                 <figcaption class="campo__dato">
-                    <span class="campo__dato-etiqueta">Tu parcela</span>
+                    <span class="campo__dato-etiqueta" data-i18n="welcome.figureLabel">Tu parcela</span>
                     <span class="campo__dato-valor mono">−31.5375, −68.5364</span>
                 </figcaption>
             </figure>
         </div>
 
-        <footer class="bienvenida__pie">
+        <footer class="bienvenida__pie" data-i18n="welcome.footer">
             Prototipo creado para NASA Space Apps 2026 con datos de NASA POWER.
         </footer>
     </main>
@@ -145,29 +154,39 @@
         <header class="mapa-vista__barra">
             <button class="boton-volver" id="btn-volver" type="button">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Volver</span>
+                <span data-i18n="header.backToHome">Volver</span>
             </button>
-            <span class="marca marca--chica">
-                <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true">
-                    <rect x="1" y="1" width="30" height="30" rx="9" fill="#2D4A3E"/>
-                    <path d="M9 21c7 0 12-4 14-11-7 0-12 4-14 11Z" fill="#F9F8F6"/>
-                    <path d="M9 22c3-5 7-8 12-10" fill="none" stroke="#2D4A3E" stroke-width="1.4" stroke-linecap="round"/>
-                </svg>
-                <span class="marca__nombre">ZondaSat</span>
-            </span>
+            <div class="barra-derecha">
+                <div class="selector-idioma" role="group" aria-label="Seleccionar idioma">
+                    <svg class="selector-idioma__icono" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 0 0 0 18M12 3a14.5 14.5 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                    <button class="selector-idioma__btn selector-idioma__btn--activo" type="button" data-lang="es" aria-pressed="true">ES</button>
+                    <button class="selector-idioma__btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+                </div>
+                <span class="marca marca--chica">
+                    <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true">
+                        <rect x="1" y="1" width="30" height="30" rx="9" fill="#2D4A3E"/>
+                        <path d="M9 21c7 0 12-4 14-11-7 0-12 4-14 11Z" fill="#F9F8F6"/>
+                        <path d="M9 22c3-5 7-8 12-10" fill="none" stroke="#2D4A3E" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    <span class="marca__nombre">ZondaSat</span>
+                </span>
+            </div>
         </header>
 
         <div class="mapa-vista__mapa">
-            <div id="mapa" role="application" aria-label="Mapa de San Juan para marcar tu parcela"></div>
+            <div id="mapa" role="application" data-i18n-aria="map.appAria" aria-label="Mapa de San Juan para marcar tu parcela"></div>
 
-            <p class="pista" id="pista" role="status" aria-live="polite">Tocá el mapa para acercarte a tu campo</p>
+            <p class="pista" id="pista" role="status" aria-live="polite" data-i18n="map.hintZoom">Tocá el mapa para acercarte a tu campo</p>
 
             <div class="mapa-controles">
-                <div class="conmutador" role="group" aria-label="Tipo de mapa">
-                    <button class="conmutador__opcion" type="button" data-capa="satelite" aria-pressed="true">Satélite</button>
-                    <button class="conmutador__opcion" type="button" data-capa="calles" aria-pressed="false">Mapa</button>
+                <div class="conmutador" role="group" data-i18n-aria="map.mapTypeAria" aria-label="Tipo de mapa">
+                    <button class="conmutador__opcion" type="button" data-capa="satelite" aria-pressed="true" data-i18n="map.layerSatellite">Satélite</button>
+                    <button class="conmutador__opcion" type="button" data-capa="calles" aria-pressed="false" data-i18n="map.layerStreets">Mapa</button>
                 </div>
-                <button class="boton-flotante" id="btn-ubicacion" type="button" aria-label="Ir a mi ubicación" title="Ir a mi ubicación">
+                <button class="boton-flotante" id="btn-ubicacion" type="button" data-i18n-aria="map.myLocationAria" data-i18n-title="map.myLocationAria" aria-label="Ir a mi ubicación" title="Ir a mi ubicación">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="12" cy="12" r="3.2" fill="currentColor"/>
                         <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -180,38 +199,38 @@
             <div class="mapa-herramientas" id="herramientas" hidden>
                 <button class="boton-herramienta" id="btn-deshacer" type="button">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7L4 12l5 5M4 12h10a6 6 0 0 1 0 12" transform="translate(0 -3)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Deshacer</span>
+                    <span data-i18n="map.undo">Deshacer</span>
                 </button>
                 <button class="boton-herramienta" id="btn-borrar" type="button">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7M10.5 11v5M13.5 11v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Borrar</span>
+                    <span data-i18n="map.clear">Borrar</span>
                 </button>
             </div>
         </div>
 
-        <aside class="panel" id="panel" aria-label="Tu parcela">
+        <aside class="panel" id="panel" data-i18n-aria="map.panelAria" aria-label="Tu parcela">
             <!-- Estado: marcando la parcela -->
             <div class="panel__estado" id="panel-marcando">
                 <div class="panel__encabezado">
-                    <h2 class="panel__titulo">Marcá tu parcela</h2>
-                    <p class="panel__ayuda">Tocá el mapa en cada esquina de tu terreno. Podés arrastrar un punto para corregirlo.</p>
+                    <h2 class="panel__titulo" data-i18n="map.panelTitle">Marcá tu parcela</h2>
+                    <p class="panel__ayuda" data-i18n="map.panelHelp">Tocá el mapa en cada esquina de tu terreno. Podés arrastrar un punto para corregirlo.</p>
                 </div>
 
                 <dl class="datos">
                     <div class="datos__item">
-                        <dt>Esquinas</dt>
+                        <dt data-i18n="map.cornersLabel">Esquinas</dt>
                         <dd id="dato-puntos">0</dd>
                     </div>
                     <div class="datos__item">
-                        <dt>Superficie</dt>
-                        <dd id="dato-superficie">Sin marcar</dd>
+                        <dt data-i18n="map.areaLabel">Superficie</dt>
+                        <dd id="dato-superficie" data-i18n="map.unmarked">Sin marcar</dd>
                     </div>
                     <div class="datos__item datos__item--ancho" id="fila-centro" hidden>
-                        <dt>Centro de la parcela</dt>
+                        <dt data-i18n="map.centerLabel">Centro de la parcela</dt>
                         <dd class="mono" id="dato-centro">Sin marcar</dd>
                     </div>
                     <div class="datos__item datos__item--ancho" id="fila-zona" hidden>
-                        <dt>Zona con datos de clima</dt>
+                        <dt data-i18n="map.climateZoneLabel">Zona con datos de clima</dt>
                         <dd id="dato-zona"></dd>
                     </div>
                 </dl>
@@ -219,8 +238,8 @@
                 <p class="aviso" id="aviso-lejos" hidden></p>
 
                 <div class="acciones">
-                    <button class="boton boton--primario acciones__principal" id="btn-analizar" type="button" disabled>Comenzar análisis</button>
-                    <p class="acciones__nota" id="nota-analizar">Marcá al menos 3 esquinas para comenzar.</p>
+                    <button class="boton boton--primario acciones__principal" id="btn-analizar" type="button" disabled data-i18n="map.startAnalysisBtn">Comenzar análisis</button>
+                    <p class="acciones__nota" id="nota-analizar" data-i18n="map.minCornersNote">Marcá al menos 3 esquinas para comenzar.</p>
                 </div>
             </div>
 
@@ -230,11 +249,11 @@
                     <span class="sello" aria-hidden="true">
                         <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </span>
-                    <h2 class="panel__titulo">Parcela registrada</h2>
+                    <h2 class="panel__titulo" data-i18n="map.registeredTitle">Parcela registrada</h2>
                     <p class="panel__ayuda" id="resumen-parcela"></p>
                 </div>
                 <div class="acciones">
-                    <button class="boton boton--secundario acciones__principal" id="btn-otra" type="button">Marcar otra parcela</button>
+                    <button class="boton boton--secundario acciones__principal" id="btn-otra" type="button" data-i18n="map.markAnotherBtn">Marcar otra parcela</button>
                 </div>
             </div>
         </aside>

@@ -55,7 +55,7 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--ambar); outline-offset: 3px; }
 
 /* ---------------------------------------------------------------------
-   Marca
+   Marca y selector de idioma en Header
    --------------------------------------------------------------------- */
 .marca {
     display: inline-flex;
@@ -68,6 +68,58 @@ button { font: inherit; color: inherit; }
 .marca__nombre { font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; }
 .marca--chica .marca__icono { width: 28px; height: 28px; }
 .marca--chica .marca__nombre { font-size: 1.05rem; }
+
+.barra-derecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selector-idioma {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 4px 3px 8px;
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(30, 41, 59, .04);
+}
+
+.selector-idioma__icono {
+    width: 16px;
+    height: 16px;
+    color: var(--primario);
+    margin-right: 3px;
+    flex: none;
+}
+
+.selector-idioma__btn {
+    min-width: 32px;
+    min-height: 28px;
+    padding: 3px 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.selector-idioma__btn:hover:not(.selector-idioma__btn--activo) {
+    color: var(--primario);
+    background: var(--primario-suave);
+}
+
+.selector-idioma__btn--activo,
+.selector-idioma__btn[aria-pressed="true"] {
+    background: var(--primario);
+    color: #FFFFFF;
+}
 
 /* ---------------------------------------------------------------------
    Botones
@@ -109,7 +161,16 @@ button { font: inherit; color: inherit; }
     padding: max(20px, env(safe-area-inset-top)) var(--margen) max(20px, env(safe-area-inset-bottom));
 }
 
-.bienvenida__barra { padding-bottom: 20px; }
+.bienvenida__barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-bottom: 20px;
+}
 
 .bienvenida__contenido {
     flex: 1;

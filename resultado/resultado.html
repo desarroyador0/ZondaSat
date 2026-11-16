@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#F9F8F6">
-    <meta name="description" content="Tu plan de rotación de cultivos a tres años, temporada por temporada.">
-    <title>Tu plan · ZondaSat</title>
+    <meta name="description" data-i18n-meta="meta.resultsDescription" content="Tu plan de rotación de cultivos a tres años, temporada por temporada.">
+    <title data-i18n-doc-title="meta.resultsTitle">Tu plan · ZondaSat</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,26 +20,36 @@
         <div class="r-barra__fila">
             <a class="boton-volver" href="../index.html#mapa">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Mi parcela</span>
+                <span data-i18n="header.backToParcel">Mi parcela</span>
             </a>
-            <span class="marca marca--chica">
-                <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true">
-                    <rect x="1" y="1" width="30" height="30" rx="9" fill="#2D4A3E"/>
-                    <path d="M9 21c7 0 12-4 14-11-7 0-12 4-14 11Z" fill="#F9F8F6"/>
-                    <path d="M9 22c3-5 7-8 12-10" fill="none" stroke="#2D4A3E" stroke-width="1.4" stroke-linecap="round"/>
-                </svg>
-                <span class="marca__nombre">ZondaSat</span>
-            </span>
+            <div class="barra-derecha">
+                <div class="selector-idioma" role="group" aria-label="Seleccionar idioma">
+                    <svg class="selector-idioma__icono" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 0 0 0 18M12 3a14.5 14.5 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                    <button class="selector-idioma__btn selector-idioma__btn--activo" type="button" data-lang="es" aria-pressed="true">ES</button>
+                    <button class="selector-idioma__btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+                </div>
+                <span class="marca marca--chica">
+                    <svg class="marca__icono" viewBox="0 0 32 32" aria-hidden="true">
+                        <rect x="1" y="1" width="30" height="30" rx="9" fill="#2D4A3E"/>
+                        <path d="M9 21c7 0 12-4 14-11-7 0-12 4-14 11Z" fill="#F9F8F6"/>
+                        <path d="M9 22c3-5 7-8 12-10" fill="none" stroke="#2D4A3E" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    <span class="marca__nombre">ZondaSat</span>
+                </span>
+            </div>
         </div>
-        <nav class="r-nav" id="nav" aria-label="Secciones del informe" hidden></nav>
+        <nav class="r-nav" id="nav" data-i18n-aria="results.navAria" aria-label="Secciones del informe" hidden></nav>
     </header>
 
     <main class="r-principal">
         <!-- Estado de carga / error / sin datos -->
         <section class="estado" id="estado" aria-live="polite">
             <div class="estado__spinner" aria-hidden="true"></div>
-            <h1 class="estado__titulo">Armando tu plan…</h1>
-            <p class="estado__texto">Estamos analizando el clima de tu zona y redactando la explicación. Puede tardar unos segundos.</p>
+            <h1 class="estado__titulo" data-i18n="results.loadingTitle">Armando tu plan…</h1>
+            <p class="estado__texto" data-i18n="results.loadingText">Estamos analizando el clima de tu zona y redactando la explicación. Puede tardar unos segundos.</p>
         </section>
 
         <!-- Informe -->
