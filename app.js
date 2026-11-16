@@ -317,17 +317,8 @@ el.analizar.addEventListener('click', () => {
     if (informe) sessionStorage.setItem(CLAVE_INFORME, JSON.stringify(informe));
     document.dispatchEvent(new CustomEvent('zondasat:parcela-lista', { detail: { parcela, informe } }));
 
-    // TODO: cuando exista la pantalla de resultados, reemplazar lo que sigue por
-    //       window.location.href = 'resultados.html';
-    vertices.forEach(v => v.dragging.disable());
-    el.resumen.textContent =
-        `${formatoHa(parcela.superficieHa)} marcadas con ${parcela.puntos.length} esquinas` +
-        (parcela.zona ? `, en la zona ${parcela.zona.nombre}.` : '.');
-    el.panelMarcando.hidden = true;
-    el.panelLista.hidden = false;
-    el.herramientas.hidden = true;
-    if (trazo) mapa.fitBounds(trazo.getBounds(), { padding: [40, 40], maxZoom: 16 });
-    actualizarPista();
+    // Pantalla de resultados: lee la parcela y el informe guardados arriba
+    window.location.href = 'resultado/resultado.html';
 });
 
 el.otra.addEventListener('click', () => {

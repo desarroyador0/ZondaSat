@@ -4,12 +4,13 @@
 // =====================================================================
 
 export const CONFIG_IA = {
-    // Clave de la API de Gemini (Google AI Studio). Si queda vacía, se usa el texto de respaldo.
-    // OJO: en el navegador esta clave queda visible. Restringila por dominio en Google Cloud
-    // o, mejor, hacé la llamada desde un backend propio.
-
+    // La clave se lee de forma segura desde Netlify Functions (variable de entorno GEMINI_API_KEY).
+    // Dejar vacío en el frontend para no exponer la API key en el repositorio.
+    apiKey: "",
+    endpoint: "/.netlify/functions/gemini",
     // ID del modelo. Verificá en Google AI Studio cuál es el Flash vigente y reemplazalo si cambió.
-    modelo: "gemini-2.5-flash",
+    modelo: "gemini-3-flash-preview",
+    modelosRespaldo: ["gemini-2.5-flash", "gemini-2.5-flash-lite"],
 
     temperatura: 0.4,          // más bajo = más fiel a los datos; más alto = más variado
     maxTokens: 8192,           // tope de la respuesta

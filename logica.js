@@ -1,6 +1,7 @@
 import { ZONAS_SAN_JUAN } from './datos_clima.js';
 import { CULTIVOS_SAN_JUAN } from './cultivos.js';
 
+
 // =====================================================================
 // Parámetros del modelo. Son supuestos de diseño: ajustarlos acá.
 // =====================================================================
@@ -9,7 +10,7 @@ export const PARAMS = {
     amortiguacionTendencia: 0.3,     // escenario "tendencia": fracción del cambio 2026 vs. histórico que se extrapola
 
     aguaDesdeClima: true,            // true: el puntaje de agua se calcula con el clima de la zona
-                                     // false: se usa el puntaje fijo de cultivos.js (puntajes[0])
+    // false: se usa el puntaje fijo de cultivos.js (puntajes[0])
     lluviaEfectiva: 0.7,             // fracción de la lluvia que aprovecha el cultivo
     riegoReferenciaMm: 1200,         // riego por temporada que equivale a puntaje de agua 0
 
@@ -27,12 +28,18 @@ export const PARAMS = {
 
 // Los tres planes (los pesos suman 100)
 export const PERFILES = {
-    economico: { nombre: "Plan económico", objetivo: "Obtener la mayor ganancia por hectárea",
-                 pesos: { agua: 20, ganancia: 60, suelo: 20 } },
-    hidrico:   { nombre: "Plan de ahorro de agua", objetivo: "Usar la menor cantidad de agua de riego",
-                 pesos: { agua: 60, ganancia: 20, suelo: 20 } },
-    suelo:     { nombre: "Plan de cuidado del suelo", objetivo: "Dejar el suelo en el mejor estado a largo plazo",
-                 pesos: { agua: 20, ganancia: 20, suelo: 60 } }
+    economico: {
+        nombre: "Plan económico", objetivo: "Obtener la mayor ganancia por hectárea",
+        pesos: { agua: 20, ganancia: 60, suelo: 20 }
+    },
+    hidrico: {
+        nombre: "Plan de ahorro de agua", objetivo: "Usar la menor cantidad de agua de riego",
+        pesos: { agua: 60, ganancia: 20, suelo: 20 }
+    },
+    suelo: {
+        nombre: "Plan de cuidado del suelo", objetivo: "Dejar el suelo en el mejor estado a largo plazo",
+        pesos: { agua: 20, ganancia: 20, suelo: 60 }
+    }
 };
 
 const ESCENARIOS = {
@@ -48,36 +55,54 @@ const ESCENARIOS = {
 //   dias      : días que el cultivo ocupa el lote dentro de la temporada
 //   confianza : solidez de los datos económicos cargados ("media" | "baja")
 const AGRONOMIA = {
-    "Vid (Uva)":                 { tipo: "Frutal perenne", temporada: "perenne", familia: "Vitaceae", familiaComun: "vides",
-                                   fijaN: false, porAnio: true, kc: { verano: 0.60, invierno: 0.15 }, dias: 182, confianza: "media",
-                                   aniosHastaProducir: 3, implantacionUSDha: 20000,
-                                   clima: { tempMaxTolerada: 38, tempMinTolerada: -2, humedadRaicesMin: 0.31, vientoMaxTolerado: 9.0 } },
-    "Olivo":                     { tipo: "Frutal perenne", temporada: "perenne", familia: "Oleaceae", familiaComun: "olivos",
-                                   fijaN: false, porAnio: true, kc: { verano: 0.70, invierno: 0.65 }, dias: 182, confianza: "baja",
-                                   aniosHastaProducir: 3, implantacionUSDha: 12000,
-                                   clima: { tempMaxTolerada: 41, tempMinTolerada: -4, humedadRaicesMin: 0.26, vientoMaxTolerado: 11.0 } },
-    "Pistacho":                  { tipo: "Frutal perenne de alto valor", temporada: "perenne", familia: "Anacardiaceae", familiaComun: "pistachos",
-                                   fijaN: false, porAnio: true, kc: { verano: 0.85, invierno: 0.15 }, dias: 182, confianza: "media",
-                                   aniosHastaProducir: 5, implantacionUSDha: 14000,
-                                   clima: { tempMaxTolerada: 42, tempMinTolerada: -6, humedadRaicesMin: 0.27, vientoMaxTolerado: 10.5 } },
-    "Tomate para industria":     { tipo: "Hortaliza de verano", temporada: "caliente", familia: "Solanaceae", familiaComun: "solanáceas",
-                                   fijaN: false, porAnio: false, kc: { verano: 0.90 }, dias: 135, confianza: "media",
-                                   clima: { tempMaxTolerada: 34, tempMinTolerada: 7, humedadRaicesMin: 0.34, vientoMaxTolerado: 7.5 } },
-    "Melón":                     { tipo: "Hortaliza de verano", temporada: "caliente", familia: "Cucurbitaceae", familiaComun: "cucurbitáceas",
-                                   fijaN: false, porAnio: false, kc: { verano: 0.80 }, dias: 100, confianza: "baja",
-                                   clima: { tempMaxTolerada: 36, tempMinTolerada: 8, humedadRaicesMin: 0.33, vientoMaxTolerado: 8.0 } },
-    "Ajo":                       { tipo: "Hortaliza de invierno", temporada: "fria", familia: "Amaryllidaceae", familiaComun: "aliáceas (ajo y cebolla)",
-                                   fijaN: false, porAnio: false, kc: { invierno: 0.85 }, dias: 182, confianza: "media",
-                                   clima: { tempMaxTolerada: 27, tempMinTolerada: -4, humedadRaicesMin: 0.29, vientoMaxTolerado: 9.5 } },
-    "Cebolla":                   { tipo: "Hortaliza de invierno", temporada: "fria", familia: "Amaryllidaceae", familiaComun: "aliáceas (ajo y cebolla)",
-                                   fijaN: false, porAnio: false, kc: { invierno: 0.90 }, dias: 182, confianza: "baja",
-                                   clima: { tempMaxTolerada: 29, tempMinTolerada: -3, humedadRaicesMin: 0.30, vientoMaxTolerado: 9.5 } },
-    "Garbanzo (Leguminosa)":     { tipo: "Legumbre de invierno", temporada: "fria", familia: "Fabaceae", familiaComun: "leguminosas",
-                                   fijaN: true, porAnio: false, kc: { invierno: 0.70 }, dias: 150, confianza: "baja",
-                                   clima: { tempMaxTolerada: 30, tempMinTolerada: -2, humedadRaicesMin: 0.27, vientoMaxTolerado: 9.0 } },
-    "Alfalfa / Cobertura Verde": { tipo: "Forrajera y recuperadora de suelo", temporada: "ambas", familia: "Fabaceae", familiaComun: "leguminosas",
-                                   fijaN: true, porAnio: true, kc: { verano: 0.95, invierno: 0.60 }, dias: 182, confianza: "baja",
-                                   clima: { tempMaxTolerada: 37, tempMinTolerada: -5, humedadRaicesMin: 0.25, vientoMaxTolerado: 11.5 } }
+    "Vid (Uva)": {
+        tipo: "Frutal perenne", temporada: "perenne", familia: "Vitaceae", familiaComun: "vides",
+        fijaN: false, porAnio: true, kc: { verano: 0.60, invierno: 0.15 }, dias: 182, confianza: "media",
+        aniosHastaProducir: 3, implantacionUSDha: 20000,
+        clima: { tempMaxTolerada: 38, tempMinTolerada: -2, humedadRaicesMin: 0.31, vientoMaxTolerado: 9.0 }
+    },
+    "Olivo": {
+        tipo: "Frutal perenne", temporada: "perenne", familia: "Oleaceae", familiaComun: "olivos",
+        fijaN: false, porAnio: true, kc: { verano: 0.70, invierno: 0.65 }, dias: 182, confianza: "baja",
+        aniosHastaProducir: 3, implantacionUSDha: 12000,
+        clima: { tempMaxTolerada: 41, tempMinTolerada: -4, humedadRaicesMin: 0.26, vientoMaxTolerado: 11.0 }
+    },
+    "Pistacho": {
+        tipo: "Frutal perenne de alto valor", temporada: "perenne", familia: "Anacardiaceae", familiaComun: "pistachos",
+        fijaN: false, porAnio: true, kc: { verano: 0.85, invierno: 0.15 }, dias: 182, confianza: "media",
+        aniosHastaProducir: 5, implantacionUSDha: 14000,
+        clima: { tempMaxTolerada: 42, tempMinTolerada: -6, humedadRaicesMin: 0.27, vientoMaxTolerado: 10.5 }
+    },
+    "Tomate para industria": {
+        tipo: "Hortaliza de verano", temporada: "caliente", familia: "Solanaceae", familiaComun: "solanáceas",
+        fijaN: false, porAnio: false, kc: { verano: 0.90 }, dias: 135, confianza: "media",
+        clima: { tempMaxTolerada: 34, tempMinTolerada: 7, humedadRaicesMin: 0.34, vientoMaxTolerado: 7.5 }
+    },
+    "Melón": {
+        tipo: "Hortaliza de verano", temporada: "caliente", familia: "Cucurbitaceae", familiaComun: "cucurbitáceas",
+        fijaN: false, porAnio: false, kc: { verano: 0.80 }, dias: 100, confianza: "baja",
+        clima: { tempMaxTolerada: 36, tempMinTolerada: 8, humedadRaicesMin: 0.33, vientoMaxTolerado: 8.0 }
+    },
+    "Ajo": {
+        tipo: "Hortaliza de invierno", temporada: "fria", familia: "Amaryllidaceae", familiaComun: "aliáceas (ajo y cebolla)",
+        fijaN: false, porAnio: false, kc: { invierno: 0.85 }, dias: 182, confianza: "media",
+        clima: { tempMaxTolerada: 27, tempMinTolerada: -4, humedadRaicesMin: 0.29, vientoMaxTolerado: 9.5 }
+    },
+    "Cebolla": {
+        tipo: "Hortaliza de invierno", temporada: "fria", familia: "Amaryllidaceae", familiaComun: "aliáceas (ajo y cebolla)",
+        fijaN: false, porAnio: false, kc: { invierno: 0.90 }, dias: 182, confianza: "baja",
+        clima: { tempMaxTolerada: 29, tempMinTolerada: -3, humedadRaicesMin: 0.30, vientoMaxTolerado: 9.5 }
+    },
+    "Garbanzo (Leguminosa)": {
+        tipo: "Legumbre de invierno", temporada: "fria", familia: "Fabaceae", familiaComun: "leguminosas",
+        fijaN: true, porAnio: false, kc: { invierno: 0.70 }, dias: 150, confianza: "baja",
+        clima: { tempMaxTolerada: 30, tempMinTolerada: -2, humedadRaicesMin: 0.27, vientoMaxTolerado: 9.0 }
+    },
+    "Alfalfa / Cobertura Verde": {
+        tipo: "Forrajera y recuperadora de suelo", temporada: "ambas", familia: "Fabaceae", familiaComun: "leguminosas",
+        fijaN: true, porAnio: true, kc: { verano: 0.95, invierno: 0.60 }, dias: 182, confianza: "baja",
+        clima: { tempMaxTolerada: 37, tempMinTolerada: -5, humedadRaicesMin: 0.25, vientoMaxTolerado: 11.5 }
+    }
 };
 
 const BARBECHO = "Barbecho (sin cultivo viable)";
@@ -106,7 +131,7 @@ export function calcularCentroide(puntos) {
 function distanciaKm(lat1, lon1, lat2, lon2) {
     const rad = g => g * Math.PI / 180;
     const a = Math.sin(rad(lat2 - lat1) / 2) ** 2 +
-              Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lon2 - lon1) / 2) ** 2;
+        Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lon2 - lon1) / 2) ** 2;
     return 2 * 6371 * Math.asin(Math.sqrt(a));
 }
 
@@ -203,8 +228,10 @@ function calcularAgua(ag, temporada) {
 // Margen en USD por hectárea y temporada. null en perennes: depende de la implantación y los años sin producir.
 function calcularEconomia(cultivo) {
     const ag = AGRONOMIA[cultivo.nombre];
-    const base = { rendimientoTHa: cultivo.rendimientoTHa, precioUSDt: cultivo.precioUSDt, costoUSDha: cultivo.costoUSDha,
-                   datosPorAnio: ag.porAnio, confianzaDatos: ag.confianza };
+    const base = {
+        rendimientoTHa: cultivo.rendimientoTHa, precioUSDt: cultivo.precioUSDt, costoUSDha: cultivo.costoUSDha,
+        datosPorAnio: ag.porAnio, confianzaDatos: ag.confianza
+    };
     if (ag.temporada === "perenne") {
         return { ...base, margenEsperadoUSD: null, aniosHastaProducir: ag.aniosHastaProducir, implantacionUSDha: ag.implantacionUSDha };
     }
@@ -469,8 +496,10 @@ export function generarPlanes(zona, opciones = {}) {
 function resumirClima(zona, temporadas) {
     const resumen = {
         fuente: "NASA POWER (promedios de temporada de la celda que contiene la zona, de unos 50 km de lado)",
-        unidades: { radiacion: "MJ/m² por día", tempMax: "°C", tempMin: "°C", viento: "m/s",
-                    humedadSup: "índice 0-1", humedadRaices: "índice 0-1", precipitacion: "mm por día" }
+        unidades: {
+            radiacion: "MJ/m² por día", tempMax: "°C", tempMin: "°C", viento: "m/s",
+            humedadSup: "índice 0-1", humedadRaices: "índice 0-1", precipitacion: "mm por día"
+        }
     };
     for (const estacion of ["verano", "invierno"]) {
         const usada = temporadas.find(t => t.estacion === estacion);
@@ -553,8 +582,10 @@ export function generarInforme(zona, opciones = {}, terreno = null) {
     const escenario = ESCENARIOS[opciones.escenario] ? opciones.escenario : "base";
     const planes = generarPlanes(zona, opciones);
     if (opciones.pesosUsuario) {
-        planes.personalizado = { nombre: "Plan personalizado", objetivo: "Equilibrio elegido por el usuario",
-                                 ...generarPlan(zona, opciones.pesosUsuario, opciones) };
+        planes.personalizado = {
+            nombre: "Plan personalizado", objetivo: "Equilibrio elegido por el usuario",
+            ...generarPlan(zona, opciones.pesosUsuario, opciones)
+        };
     }
     return {
         terreno: terreno || { zona: { id: zona.id, nombre: zona.nombre } },

@@ -10,7 +10,7 @@
 // La clave, el modelo y el prompt se configuran en config_ia.js.
 // =====================================================================
 
-import { CONFIG_IA, PROMPT_SISTEMA } from './config_ia.js';
+import { CONFIG_IA, PROMPT_SISTEMA } from './config.js';
 import { planificarTerreno } from './logica.js';
 
 const BARBECHO = "Barbecho (sin cultivo viable)";
@@ -53,7 +53,7 @@ export async function generarResultadosDesdeInforme(informe) {
     let fuente = "local";
     let aviso = null;
 
-    if (CONFIG_IA.apiKey) {
+    if (CONFIG_IA.apiKey || CONFIG_IA.endpoint) {
         try {
             textos = await redactarConGemini(informe);
             fuente = "ia";
@@ -209,12 +209,80 @@ const ESQUEMA_RESPUESTA = {
 };
 
 // =====================================================================
-// 4. Llamada a Gemini
+// 4. Llamada a Gemini (vía Netlify Functions o clave local en .env / config.js)
 // =====================================================================
-export async function redactarConGemini(informe) {
-    if (!CONFIG_IA.apiKey) throw new Error("Falta la clave de Gemini en config_ia.js");
+let claveLocalEnv = null;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(CONFIG_IA.modelo)}:generateContent`;
+async function obtenerClaveLocal() {
+    if (CONFIG_IA.apiKey) return CONFIG_IA.apiKey;
+    if (claveLocalEnv !== null) return claveLocalEnv;
+    // En desarrollo local (ej. Live Server), intenta leer ../.env (ignorado por Git)
+    for (const ruta of ["../.env", "/.env", ".env"]) {
+        try {
+            const r = await fetch(ruta, { cache: "no-store" });
+            if (!r.ok) continue;
+            const txt = await r.text();
+            const m = txt.match(/^\s*GEMINI_API_KEY\s*=\s*([^\s#]+)/m);
+            if (m && m[1]) {
+                claveLocalEnv = m[1].replace(/^["']|["']$/g, "");
+                return claveLocalEnv;
+            }
+        } catch {
+            // Ignorar si no existe
+        }
+    }
+    claveLocalEnv = "";
+    return "";
+}
+
+async function pedirAGeminiDirecto(modelo, cuerpo, apiKey) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
+    const control = new AbortController();
+    const reloj = setTimeout(() => control.abort(), CONFIG_IA.tiempoMaximoMs);
+    try {
+        return await fetch(url, {
+            method: "POST",
+            signal: control.signal,
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body: JSON.stringify(cuerpo)
+        });
+    } finally {
+        clearTimeout(reloj);
+    }
+}
+
+async function pedirAGemini(modelo, cuerpo) {
+    const apiKeyConfig = CONFIG_IA.apiKey;
+    const control = new AbortController();
+    const reloj = setTimeout(() => control.abort(), CONFIG_IA.tiempoMaximoMs);
+    try {
+        if (!apiKeyConfig && CONFIG_IA.endpoint) {
+            const respProxy = await fetch(CONFIG_IA.endpoint, {
+                method: "POST",
+                signal: control.signal,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ modelo, cuerpo })
+            });
+            // Si estamos en Live Server local, el POST a /.netlify/functions/gemini devuelve 404 o 405
+            if (respProxy.status !== 404 && respProxy.status !== 405) {
+                return respProxy;
+            }
+        }
+        const apiKey = await obtenerClaveLocal();
+        if (!apiKey) {
+            throw new Error("No se encontró la función de Netlify (405) ni una clave local en .env");
+        }
+        return await pedirAGeminiDirecto(modelo, cuerpo, apiKey);
+    } catch (error) {
+        throw new Error(error.name === "AbortError" ? "Gemini tardó demasiado en responder" : `No se pudo conectar con Gemini: ${error.message}`);
+    } finally {
+        clearTimeout(reloj);
+    }
+}
+
+export async function redactarConGemini(informe) {
+    if (!CONFIG_IA.apiKey && !CONFIG_IA.endpoint) throw new Error("Falta la clave de Gemini o el endpoint de Netlify");
+
     const cuerpo = {
         systemInstruction: { parts: [{ text: PROMPT_SISTEMA }] },
         contents: [{
@@ -229,25 +297,57 @@ export async function redactarConGemini(informe) {
         }
     };
 
-    const control = new AbortController();
-    const reloj = setTimeout(() => control.abort(), CONFIG_IA.tiempoMaximoMs);
-    let respuesta;
-    try {
-        respuesta = await fetch(url, {
-            method: "POST",
-            signal: control.signal,
-            headers: { "Content-Type": "application/json", "x-goog-api-key": CONFIG_IA.apiKey },
-            body: JSON.stringify(cuerpo)
-        });
-    } catch (error) {
-        throw new Error(error.name === "AbortError" ? "Gemini tardó demasiado en responder" : `No se pudo conectar con Gemini: ${error.message}`);
-    } finally {
-        clearTimeout(reloj);
+    const modelos = [...new Set([
+        CONFIG_IA.modelo,
+        ...(CONFIG_IA.modelosRespaldo || []),
+        "gemini-3.8-flash",
+        "gemini-flash-latest"
+    ].filter(Boolean))];
+    let respuesta = null;
+    let ultimoDetalle = "";
+
+    for (const modelo of modelos) {
+        respuesta = await pedirAGemini(modelo, cuerpo);
+        if (respuesta.ok) break;
+        ultimoDetalle = await respuesta.text().catch(() => "");
+        if (respuesta.status !== 404) {
+            throw new Error(`Gemini (${modelo}) respondió ${respuesta.status}: ${ultimoDetalle.slice(0, 400)}`);
+        }
     }
 
-    if (!respuesta.ok) {
-        const detalle = await respuesta.text().catch(() => "");
-        throw new Error(`Gemini respondió ${respuesta.status}: ${detalle.slice(0, 400)}`);
+    // Si todos los nombres fijos dieron 404, consulta a la API qué modelo Flash tiene habilitado esta clave
+    if (!respuesta || !respuesta.ok) {
+        try {
+            const claveLocal = await obtenerClaveLocal();
+            const usaProxy = !claveLocal && CONFIG_IA.endpoint;
+            const listaResp = usaProxy
+                ? await fetch(CONFIG_IA.endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ accion: "listar" })
+                })
+                : await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+                    headers: { "x-goog-api-key": claveLocal }
+                });
+            if (listaResp.ok) {
+                const { models = [] } = await listaResp.json();
+                const disponibles = models
+                    .filter(m => (m.supportedGenerationMethods || []).includes("generateContent"))
+                    .map(m => m.name.replace(/^models\//, ""))
+                    .filter(n => /gemini/i.test(n) && !/embedding|imagen|veo|tts|audio|vision/i.test(n));
+                const preferido = disponibles.find(n => /flash/i.test(n)) || disponibles[0];
+                if (preferido && !modelos.includes(preferido)) {
+                    respuesta = await pedirAGemini(preferido, cuerpo);
+                    if (!respuesta.ok) ultimoDetalle = await respuesta.text().catch(() => "");
+                }
+            }
+        } catch {
+            // Si falla el listado, se informa el error original abajo
+        }
+    }
+
+    if (!respuesta || !respuesta.ok) {
+        throw new Error(`Gemini respondió ${respuesta ? respuesta.status : "error"}: ${ultimoDetalle.slice(0, 400)}`);
     }
 
     const json = await respuesta.json();
